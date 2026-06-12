@@ -1,0 +1,22 @@
+# A1 Poster Content
+
+## Project Title
+Social Media Emotion Analyzer
+
+## Team Members
+Laila, Wajee, Shree, Qistina
+
+## Problem Summary
+Social media posts contain different emotions. This project builds an NLP system to classify text into Joy, Neutral, Anger, Surprise, Sadness, and Fear.
+
+## NLP Pipeline
+Dataset → Text preprocessing → TF-IDF / Word2Vec → Classification models → Evaluation → Streamlit app
+
+## Key Results
+Insert model accuracy comparison table and confusion matrix screenshot after training.
+
+## Best Visualizations
+Word cloud, class distribution, model comparison.
+
+## QR Code
+Add QR code linking to your GitHub repository.

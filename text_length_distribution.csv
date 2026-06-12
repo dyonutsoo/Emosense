@@ -1,0 +1,7 @@
+,Joy,Neutral,Anger,Surprise,Sadness,Fear
+Joy,44,0,0,0,0,0
+Neutral,0,44,0,0,0,0
+Anger,0,0,44,0,0,0
+Surprise,0,0,0,44,0,0
+Sadness,0,0,0,0,44,0
+Fear,0,0,0,0,0,44
