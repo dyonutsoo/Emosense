@@ -161,7 +161,6 @@ def input_influential_words(clean_text):
 
 
 st.sidebar.markdown("## \U0001F3AD Emotion Analyzer")
-st.sidebar.caption("SAIA 2163 - NLP Project")
 page = st.sidebar.radio(
     "Navigate",
     ["Text Analyzer", "Overview", "Data Explorer", "Visualizations", "Model Info"],
