@@ -1,7 +1,5 @@
 # Social Media Emotion Analyzer
 
-This is a full SAIA 2163 Final Project Streamlit app for Theme 5: Social Media Emotion Analyzer.
-
 ## Features
 - Text input and instant emotion prediction
 - Confidence score for each emotion
