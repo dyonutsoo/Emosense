@@ -7,5 +7,9 @@ matplotlib
 wordcloud
 joblib
 datasets
-gensim
+gensim>=4.4.0
 nltk
+torch
+transformers
+langdetect
+deep-translator

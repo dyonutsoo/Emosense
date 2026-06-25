@@ -28,5 +28,15 @@
   "feature_methods": [
     "TF-IDF",
     "Word2Vec average embeddings"
-  ]
+  ],
+  "transformer_model": "j-hartmann/emotion-english-distilroberta-base",
+  "transformer_label_map": {
+    "anger": "Anger",
+    "disgust": "Anger",
+    "fear": "Fear",
+    "joy": "Joy",
+    "neutral": "Neutral",
+    "sadness": "Sadness",
+    "surprise": "Surprise"
+  }
 }

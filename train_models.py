@@ -32,16 +32,22 @@ emotion_mapping = {
 }
 stemmer = PorterStemmer()
 
+NEGATION_WORDS = {
+    "no", "not", "nor", "never", "none", "nothing", "neither", "cannot", "cant",
+    "dont", "doesnt", "didnt", "isnt", "wasnt", "arent", "werent", "wont",
+    "wouldnt", "shouldnt", "couldnt", "without", "hardly", "aint",
+}
+STOP_WORDS = set(ENGLISH_STOP_WORDS) - NEGATION_WORDS
+
 def preprocess_text(text: str) -> str:
     text = str(text).lower()
     text = re.sub(r"http\S+|www\S+", " ", text)
     text = re.sub(r"[^a-z\s]", " ", text)
     tokens = re.findall(r"[a-z]+", text)
-    tokens = [stemmer.stem(t) for t in tokens if t not in ENGLISH_STOP_WORDS and len(t) > 1]
+    tokens = [stemmer.stem(t) for t in tokens if t not in STOP_WORDS and len(t) > 1]
     return " ".join(tokens)
 
 def make_fallback_dataset(n_per_class=220):
-    # This fallback keeps the app runnable without internet. Replace with GoEmotions download when online.
     templates = {
         "Joy": ["I feel happy grateful excited and proud today", "This is wonderful and makes me smile", "I love this good news so much"],
         "Neutral": ["I am reading the update and checking the information", "The post explains the situation in a simple way", "This is a normal comment about the topic"],
@@ -148,8 +154,43 @@ if __name__ == "__main__":
             "Macro F1": f1,
         })
 
+    HF_MODEL_NAME = "j-hartmann/emotion-english-distilroberta-base"
+    TRANSFORMER_LABEL_MAP = {
+        "anger": "Anger", "disgust": "Anger", "fear": "Fear",
+        "joy": "Joy", "neutral": "Neutral", "sadness": "Sadness", "surprise": "Surprise",
+    }
+    try:
+        from transformers import pipeline as hf_pipeline
+        print("Evaluating pre-trained transformer (DistilRoBERTa)...")
+        emotion_pipe = hf_pipeline(
+            "text-classification", model=HF_MODEL_NAME,
+            return_all_scores=False, device=-1,
+        )
+        EVAL_N = min(300, len(test_df))
+        sample_df = test_df.sample(EVAL_N, random_state=RANDOM_STATE)
+        raw_preds = emotion_pipe(
+            sample_df["text"].tolist(), truncation=True, max_length=128, batch_size=32
+        )
+        t_preds = [TRANSFORMER_LABEL_MAP.get(r["label"], "Neutral") for r in raw_preds]
+        t_prec, t_rec, t_f1, _ = precision_recall_fscore_support(
+            sample_df["emotion"], t_preds, average="macro", zero_division=0
+        )
+        results.append({
+            "Model": "DistilRoBERTa (Transformer)",
+            "Feature Method": "Transformer Embeddings",
+            "Val Accuracy": None,
+            "Test Accuracy": accuracy_score(sample_df["emotion"], t_preds),
+            "Precision": t_prec,
+            "Recall": t_rec,
+            "Macro F1": t_f1,
+        })
+        print(f"  Transformer F1 (sample n={EVAL_N}): {t_f1:.3f}")
+    except Exception as e:
+        print(f"Transformer evaluation skipped (install 'transformers torch' to enable): {e}")
+
     results_df = pd.DataFrame(results).sort_values("Macro F1", ascending=False)
-    best_name = results_df.iloc[0]["Model"]
+    sklearn_results = results_df[results_df["Model"].isin(list(model_specs.keys()))]
+    best_name = sklearn_results.iloc[0]["Model"]
     best_pred = predictions[best_name]
 
     cm = confusion_matrix(test_df["emotion"], best_pred, labels=CLASSES)
@@ -159,7 +200,7 @@ if __name__ == "__main__":
     test_df[["text", "clean_text", "emotion"]].to_csv(os.path.join(DATA_DIR, "test_data.csv"), index=False)
     save_top_words(tfidf, X_train_tfidf, train_df["emotion"])
 
-    text_lengths = data.assign(TextLength=data["text"].str.split().str.len())[ ["emotion", "TextLength"] ]
+    text_lengths = data.assign(TextLength=data["text"].str.split().str.len())[["emotion", "TextLength"]]
     text_lengths.to_csv(os.path.join(MODEL_DIR, "text_length_distribution.csv"), index=False)
 
     joblib.dump(tfidf, os.path.join(MODEL_DIR, "tfidf_vectorizer.joblib"))
@@ -172,7 +213,9 @@ if __name__ == "__main__":
         "best_model_file": model_files[best_name],
         "model_files": model_files,
         "preprocessing": ["lowercase", "remove URLs", "remove special characters/numbers", "tokenization", "stopword removal", "stemming"],
-        "feature_methods": ["TF-IDF", "Word2Vec average embeddings"]
+        "feature_methods": ["TF-IDF", "Word2Vec average embeddings"],
+        "transformer_model": HF_MODEL_NAME,
+        "transformer_label_map": TRANSFORMER_LABEL_MAP,
     }
     joblib.dump(metadata, os.path.join(MODEL_DIR, "metadata.joblib"))
     with open(os.path.join(MODEL_DIR, "metadata.json"), "w") as f:

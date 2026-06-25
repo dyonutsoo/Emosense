@@ -1149,6 +1149,7 @@ Neutral,2
 Joy,13
 Joy,6
 Anger,10
+Neutral,4
 Joy,5
 Joy,12
 Joy,27
@@ -1407,6 +1408,7 @@ Joy,17
 Joy,17
 Anger,17
 Neutral,16
+Neutral,3
 Neutral,10
 Joy,8
 Anger,16
@@ -2695,6 +2697,8 @@ Anger,8
 Neutral,28
 Neutral,22
 Surprise,25
+Neutral,4
+Neutral,2
 Joy,6
 Joy,6
 Joy,7
@@ -6414,6 +6418,7 @@ Joy,17
 Neutral,21
 Joy,26
 Anger,11
+Neutral,3
 Anger,19
 Joy,16
 Neutral,5
@@ -8564,6 +8569,7 @@ Joy,18
 Neutral,18
 Neutral,22
 Anger,4
+Neutral,2
 Neutral,16
 Joy,16
 Joy,5
@@ -10232,6 +10238,7 @@ Neutral,2
 Neutral,9
 Joy,24
 Neutral,16
+Neutral,3
 Joy,21
 Joy,10
 Joy,3
@@ -10537,6 +10544,7 @@ Neutral,7
 Joy,7
 Surprise,13
 Joy,14
+Anger,4
 Joy,22
 Joy,13
 Joy,23
@@ -11629,6 +11637,7 @@ Joy,7
 Neutral,13
 Joy,7
 Sadness,11
+Surprise,4
 Neutral,4
 Neutral,22
 Sadness,12
@@ -15109,6 +15118,7 @@ Joy,10
 Neutral,5
 Neutral,8
 Anger,8
+Anger,3
 Neutral,23
 Neutral,16
 Surprise,19
@@ -17874,6 +17884,7 @@ Joy,10
 Neutral,4
 Joy,7
 Surprise,15
+Neutral,4
 Surprise,17
 Joy,5
 Joy,4
@@ -18037,6 +18048,7 @@ Surprise,25
 Joy,7
 Surprise,25
 Joy,20
+Neutral,3
 Joy,22
 Joy,13
 Joy,8
@@ -18523,6 +18535,7 @@ Neutral,1
 Neutral,9
 Neutral,11
 Joy,4
+Neutral,5
 Neutral,24
 Joy,10
 Joy,13
@@ -18632,6 +18645,7 @@ Anger,3
 Neutral,13
 Sadness,10
 Joy,10
+Joy,7
 Surprise,24
 Joy,15
 Neutral,12
@@ -20245,6 +20259,7 @@ Neutral,13
 Joy,19
 Anger,23
 Joy,24
+Neutral,4
 Joy,27
 Neutral,4
 Surprise,6
@@ -20811,6 +20826,7 @@ Neutral,6
 Joy,14
 Neutral,6
 Joy,11
+Neutral,4
 Joy,18
 Anger,24
 Neutral,6
@@ -21255,6 +21271,7 @@ Neutral,14
 Neutral,13
 Surprise,5
 Joy,13
+Neutral,1
 Anger,31
 Joy,8
 Joy,6
@@ -21674,6 +21691,7 @@ Sadness,10
 Joy,13
 Joy,11
 Anger,24
+Neutral,4
 Joy,16
 Joy,10
 Anger,24
@@ -22923,6 +22941,7 @@ Joy,6
 Joy,18
 Joy,12
 Surprise,15
+Anger,4
 Neutral,7
 Joy,12
 Joy,10
@@ -23905,6 +23924,7 @@ Neutral,5
 Sadness,22
 Neutral,10
 Joy,3
+Neutral,3
 Joy,9
 Neutral,11
 Neutral,24
@@ -24669,6 +24689,7 @@ Joy,10
 Neutral,15
 Sadness,9
 Joy,17
+Neutral,3
 Joy,6
 Sadness,17
 Neutral,6
@@ -24941,6 +24962,7 @@ Joy,9
 Joy,4
 Joy,10
 Joy,14
+Neutral,1
 Surprise,10
 Joy,11
 Anger,18
@@ -25758,6 +25780,7 @@ Surprise,18
 Joy,8
 Neutral,25
 Joy,14
+Neutral,4
 Surprise,10
 Joy,8
 Sadness,13
@@ -30553,6 +30576,7 @@ Neutral,9
 Joy,22
 Neutral,10
 Fear,23
+Neutral,1
 Neutral,19
 Neutral,11
 Neutral,6
@@ -31914,6 +31938,7 @@ Anger,9
 Neutral,16
 Joy,23
 Joy,6
+Anger,4
 Joy,5
 Joy,15
 Sadness,14
@@ -32963,6 +32988,7 @@ Anger,17
 Joy,5
 Neutral,15
 Neutral,21
+Anger,5
 Joy,3
 Joy,2
 Anger,11
@@ -33255,6 +33281,7 @@ Surprise,7
 Surprise,25
 Anger,7
 Neutral,12
+Joy,5
 Neutral,14
 Joy,8
 Sadness,15
@@ -36006,6 +36033,7 @@ Neutral,3
 Surprise,16
 Joy,8
 Joy,3
+Neutral,2
 Surprise,8
 Sadness,19
 Sadness,8
@@ -36324,6 +36352,7 @@ Surprise,16
 Surprise,21
 Neutral,15
 Neutral,21
+Anger,3
 Joy,10
 Joy,19
 Joy,17
@@ -36391,6 +36420,7 @@ Joy,22
 Anger,19
 Anger,16
 Anger,7
+Neutral,5
 Joy,21
 Joy,14
 Neutral,9
@@ -36850,6 +36880,7 @@ Joy,21
 Surprise,11
 Joy,15
 Joy,15
+Neutral,5
 Joy,7
 Joy,23
 Neutral,5
@@ -37170,6 +37201,7 @@ Joy,9
 Neutral,13
 Joy,7
 Neutral,24
+Neutral,3
 Joy,13
 Surprise,14
 Surprise,21
@@ -37219,6 +37251,7 @@ Joy,5
 Joy,10
 Joy,13
 Neutral,2
+Neutral,3
 Neutral,21
 Joy,22
 Joy,20
@@ -40370,6 +40403,7 @@ Neutral,20
 Sadness,12
 Joy,13
 Joy,6
+Neutral,2
 Joy,15
 Joy,2
 Joy,15
@@ -40795,6 +40829,7 @@ Surprise,10
 Anger,16
 Neutral,17
 Anger,3
+Anger,2
 Anger,18
 Neutral,7
 Neutral,16
@@ -44387,6 +44422,7 @@ Anger,17
 Joy,9
 Neutral,16
 Neutral,12
+Neutral,3
 Neutral,18
 Neutral,21
 Joy,7
@@ -44400,6 +44436,7 @@ Neutral,24
 Anger,1
 Neutral,3
 Joy,4
+Neutral,3
 Neutral,6
 Joy,14
 Surprise,10
@@ -44503,6 +44540,7 @@ Joy,16
 Joy,14
 Anger,15
 Surprise,11
+Anger,4
 Joy,12
 Neutral,17
 Anger,21
@@ -45478,6 +45516,7 @@ Joy,2
 Anger,6
 Neutral,18
 Anger,20
+Neutral,5
 Neutral,20
 Neutral,24
 Anger,12
@@ -46925,6 +46964,7 @@ Neutral,20
 Neutral,10
 Joy,14
 Anger,27
+Anger,4
 Neutral,20
 Joy,22
 Neutral,25
@@ -47402,6 +47442,7 @@ Joy,4
 Joy,7
 Neutral,14
 Neutral,25
+Surprise,3
 Joy,5
 Joy,21
 Neutral,11
@@ -48661,6 +48702,7 @@ Joy,12
 Neutral,19
 Joy,8
 Joy,28
+Neutral,5
 Joy,5
 Neutral,16
 Joy,17
@@ -49053,6 +49095,7 @@ Surprise,7
 Anger,19
 Neutral,7
 Joy,16
+Anger,5
 Neutral,4
 Neutral,17
 Joy,3
@@ -49787,6 +49830,7 @@ Anger,23
 Joy,21
 Joy,11
 Sadness,14
+Neutral,3
 Surprise,14
 Neutral,21
 Neutral,20
@@ -52227,6 +52271,7 @@ Neutral,6
 Neutral,6
 Joy,11
 Joy,21
+Anger,3
 Neutral,16
 Anger,16
 Anger,14
@@ -53008,6 +53053,7 @@ Anger,8
 Sadness,14
 Anger,27
 Neutral,21
+Neutral,12
 Neutral,3
 Neutral,6
 Surprise,10
@@ -53509,6 +53555,7 @@ Surprise,12
 Neutral,16
 Anger,16
 Joy,20
+Neutral,6
 Joy,20
 Joy,5
 Neutral,3

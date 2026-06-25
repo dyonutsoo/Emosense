@@ -1,0 +1,32 @@
+{
+  "project_title": "Social Media Emotion Analyzer",
+  "dataset": "GoEmotions simplified, fallback sample included for offline runs",
+  "classes": [
+    "Joy",
+    "Neutral",
+    "Anger",
+    "Surprise",
+    "Sadness",
+    "Fear"
+  ],
+  "best_model_name": "Logistic Regression + TF-IDF",
+  "best_model_file": "logistic_regression_tf_idf.joblib",
+  "model_files": {
+    "Logistic Regression + TF-IDF": "logistic_regression_tf_idf.joblib",
+    "Linear SVM + TF-IDF": "linear_svm_tf_idf.joblib",
+    "Logistic Regression + Word2Vec": "logistic_regression_word2vec.joblib",
+    "Linear SVM + Word2Vec": "linear_svm_word2vec.joblib"
+  },
+  "preprocessing": [
+    "lowercase",
+    "remove URLs",
+    "remove special characters/numbers",
+    "tokenization",
+    "stopword removal",
+    "stemming"
+  ],
+  "feature_methods": [
+    "TF-IDF",
+    "Word2Vec average embeddings"
+  ]
+}

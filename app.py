@@ -22,6 +22,13 @@ DATA_DIR = "data"
 MODEL_DIR = "models"
 stemmer = PorterStemmer()
 
+NEGATION_WORDS = {
+    "no", "not", "nor", "never", "none", "nothing", "neither", "cannot", "cant",
+    "dont", "doesnt", "didnt", "isnt", "wasnt", "arent", "werent", "wont",
+    "wouldnt", "shouldnt", "couldnt", "without", "hardly", "aint",
+}
+STOP_WORDS = set(ENGLISH_STOP_WORDS) - NEGATION_WORDS
+
 EMOTION_STYLE = {
     "Joy": ("\U0001F60A", "#FFC857"),
     "Neutral": ("\U0001F610", "#9AA5B1"),
@@ -32,6 +39,7 @@ EMOTION_STYLE = {
 }
 PLOTLY_TEMPLATE = "plotly_dark"
 ACCENT = "#7C5CFF"
+CONF_THRESHOLD = 0.50
 
 st.markdown(
     """
@@ -89,7 +97,7 @@ def preprocess_text(text: str) -> str:
     text = re.sub(r"http\S+|www\S+", " ", text)
     text = re.sub(r"[^a-z\s]", " ", text)
     tokens = re.findall(r"[a-z]+", text)
-    tokens = [stemmer.stem(t) for t in tokens if t not in ENGLISH_STOP_WORDS and len(t) > 1]
+    tokens = [stemmer.stem(t) for t in tokens if t not in STOP_WORDS and len(t) > 1]
     return " ".join(tokens)
 
 
@@ -111,6 +119,57 @@ def load_artifacts():
     lengths = pd.read_csv(os.path.join(MODEL_DIR, "text_length_distribution.csv"))
     data = pd.read_csv(os.path.join(DATA_DIR, "emotion_dataset.csv"))
     return metadata, tfidf, tfidf_models, results, cm, class_dist, top_words, lengths, data
+
+
+def detect_and_translate(text: str):
+    try:
+        from langdetect import detect
+        lang = detect(text)
+    except Exception:
+        return text, "en"
+    if lang == "en":
+        return text, "en"
+    try:
+        from deep_translator import GoogleTranslator
+        translated = GoogleTranslator(source="auto", target="en").translate(text)
+        return translated or text, lang
+    except Exception:
+        return text, lang
+
+
+TRANSFORMER_DISPLAY_NAME = "⚡ DistilRoBERTa (Transformer)"
+_HF_MODEL = "j-hartmann/emotion-english-distilroberta-base"
+_TRANSFORMER_LABEL_MAP = {
+    "anger": "Anger", "disgust": "Anger", "fear": "Fear",
+    "joy": "Joy", "neutral": "Neutral", "sadness": "Sadness", "surprise": "Surprise",
+}
+
+
+@st.cache_resource
+def load_transformer():
+    try:
+        from transformers import pipeline as hf_pipeline
+        return hf_pipeline(
+            "text-classification", model=_HF_MODEL,
+            top_k=None, device=-1,
+        )
+    except Exception:
+        return None
+
+
+def transformer_scores(pipe, text: str) -> pd.DataFrame:
+    raw = pipe(text, truncation=True, max_length=512)[0]
+    if isinstance(raw, dict):
+        raw = [raw]
+    agg: dict = {}
+    for r in raw:
+        label = _TRANSFORMER_LABEL_MAP.get(r["label"], "Neutral")
+        agg[label] = agg.get(label, 0.0) + r["score"]
+    total = sum(agg.values()) or 1.0
+    df = pd.DataFrame(
+        [{"Emotion": k, "Confidence": v / total} for k, v in agg.items()]
+    ).sort_values("Confidence", ascending=False)
+    return df.reset_index(drop=True)
 
 
 try:
@@ -184,45 +243,93 @@ def metric_row(items):
 if page == "Text Analyzer":
     st.markdown(
         "<div class='hero'><h1>\U0001F3AD Social Media Emotion Analyzer</h1>"
-        "<p>Type a post or comment and the model predicts the emotion behind it - with confidence scores and the words that drove the decision.</p></div>",
+        "<p>Paste any social media post or comment — the model predicts the emotion behind it with confidence scores and the key words that drove the decision.</p></div>",
         unsafe_allow_html=True,
     )
 
+    if "input_text" not in st.session_state:
+        st.session_state["input_text"] = ""
+    if "auto_analyze" not in st.session_state:
+        st.session_state["auto_analyze"] = False
+
     left, right = st.columns([1.15, 1])
     with left:
-        st.markdown("#### Enter text")
-        model_names = list(tfidf_models.keys())
-        default_idx = model_names.index(metadata["best_model_name"]) if metadata["best_model_name"] in model_names else 0
+        model_names = list(tfidf_models.keys()) + [TRANSFORMER_DISPLAY_NAME]
+        default_idx = (model_names.index(metadata["best_model_name"])
+                       if metadata["best_model_name"] in model_names else 0)
         model_choice = st.selectbox("Model", model_names, index=default_idx)
-        text = st.text_area("Social media text", "I am so happy and grateful for this amazing day!",
-                            height=140, label_visibility="collapsed")
-        examples = {
-            "\U0001F60A Joy": "I am so happy and grateful for this amazing day!",
-            "\U0001F620 Anger": "This is absolutely infuriating, I am so done with this.",
-            "\U0001F622 Sadness": "I miss them so much, everything feels empty now.",
-            "\U0001F632 Surprise": "Wait, I genuinely did not see that coming at all!",
-        }
-        ex_cols = st.columns(len(examples))
-        for col, (lbl, sample) in zip(ex_cols, examples.items()):
-            if col.button(lbl, use_container_width=True):
-                text = sample
-        analyze = st.button("Analyze Text", use_container_width=True)
 
-    if analyze or text:
-        model = tfidf_models[model_choice]
-        clean = preprocess_text(text)
-        X = tfidf.transform([clean])
-        pred = model.predict(X)[0]
-        scores_df = prediction_scores(model, X)
-        top_conf = float(scores_df.iloc[0]["Confidence"])
+        st.markdown(
+            "<p style='margin:10px 0 4px;font-size:0.78rem;color:#9AA5B1;"
+            "font-weight:600;letter-spacing:.06em;text-transform:uppercase;'>"
+            "💡 Try an example</p>",
+            unsafe_allow_html=True,
+        )
+        EXAMPLES = [
+            ("\U0001F60A Joy",      "I am so happy and grateful for this amazing day!"),
+            ("\U0001F620 Anger",    "This is absolutely infuriating, I am so done with this."),
+            ("\U0001F622 Sadness",  "I miss them so much, everything feels empty now."),
+            ("\U0001F632 Surprise", "Wait, I genuinely did not see that coming at all!"),
+            ("\U0001F628 Fear",     "I am terrified of what might happen, I cannot stop worrying."),
+            ("\U0001F610 Neutral",  "The team submitted the weekly report for review today."),
+        ]
+        for row_start in range(0, len(EXAMPLES), 3):
+            cols = st.columns(3)
+            for col, (lbl, sample) in zip(cols, EXAMPLES[row_start:row_start + 3]):
+                if col.button(lbl, use_container_width=True, key=f"ex_{row_start}_{lbl}"):
+                    st.session_state["input_text"] = sample
+                    st.session_state["auto_analyze"] = True
+
+        text = st.text_area(
+            "input", key="input_text", height=130,
+            label_visibility="collapsed",
+            placeholder="Type or paste a social media post here…",
+        )
+        word_count = len(text.split()) if text.strip() else 0
+        st.caption(f"{len(text)} characters · {word_count} words")
+
+        analyze = st.button("\U0001F50D Analyze Text", use_container_width=True, type="primary")
+
+    auto = st.session_state.get("auto_analyze", False)
+    if auto:
+        st.session_state["auto_analyze"] = False
+    if analyze or auto:
+        translated_text, detected_lang = detect_and_translate(text)
+        if detected_lang != "en":
+            st.info(f"🌐 Detected language: **{detected_lang.upper()}** — translated to English for analysis.")
+
+        if model_choice == TRANSFORMER_DISPLAY_NAME:
+            transformer_pipe = load_transformer()
+            if transformer_pipe is None:
+                st.error("Transformer unavailable. Run: `pip install transformers torch`")
+                st.stop()
+            with st.spinner("Running BERT-based transformer model..."):
+                scores_df = transformer_scores(transformer_pipe, translated_text)
+            raw_pred = scores_df.iloc[0]["Emotion"]
+            top_conf = float(scores_df.iloc[0]["Confidence"])
+            uncertain = top_conf < CONF_THRESHOLD
+            pred = "Neutral" if uncertain else raw_pred
+            clean = None
+        else:
+            model = tfidf_models[model_choice]
+            clean = preprocess_text(translated_text)
+            X = tfidf.transform([clean])
+            raw_pred = model.predict(X)[0]
+            scores_df = prediction_scores(model, X)
+            top_conf = float(scores_df.iloc[0]["Confidence"])
+            known_words = int(X.nnz)
+            uncertain = (top_conf < CONF_THRESHOLD) or (known_words == 0)
+            pred = "Neutral" if uncertain else raw_pred
+
         emoji, color = EMOTION_STYLE.get(pred, ("\U0001F3AD", ACCENT))
 
         with right:
             st.markdown("#### Prediction")
+            conf_line = f"Confidence {top_conf*100:.1f}%"
             st.markdown(
                 f"<div class='result-card'><div class='result-emoji'>{emoji}</div>"
                 f"<div class='result-label' style='color:{color}'>{pred}</div>"
-                f"<div class='result-conf'>Confidence {top_conf*100:.1f}%</div></div>",
+                f"<div class='result-conf'>{conf_line}</div></div>",
                 unsafe_allow_html=True,
             )
             gauge = go.Figure(go.Indicator(
@@ -247,13 +354,20 @@ if page == "Text Analyzer":
         c1.plotly_chart(style_fig(fig), use_container_width=True)
 
         with c2:
-            st.markdown("**Words that influenced this prediction**")
-            words_df = input_influential_words(clean)
-            if len(words_df):
-                st.dataframe(words_df, use_container_width=True, hide_index=True)
+            if model_choice != TRANSFORMER_DISPLAY_NAME and clean:
+                st.markdown("**Words that influenced this prediction**")
+                words_df = input_influential_words(clean)
+                if len(words_df):
+                    st.dataframe(words_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No strong keywords found. Try a longer sentence.")
+                st.caption(f"Preprocessed: `{clean or '-'}`")
             else:
-                st.info("No strong keywords found. Try a longer sentence.")
-            st.caption(f"Preprocessed: `{clean or '-'}`")
+                st.markdown("**Model info**")
+                st.info("DistilRoBERTa uses contextual embeddings — no manual feature extraction needed.")
+                if detected_lang != "en":
+                    st.caption(f"Original ({detected_lang.upper()}): _{text[:100]}_")
+                    st.caption(f"Translated (EN): _{translated_text[:100]}_")
 
 elif page == "Overview":
     st.markdown(
@@ -383,10 +497,33 @@ elif page == "Model Info":
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**Models trained and compared**")
     st.dataframe(results_df, use_container_width=True, hide_index=True)
-    st.success(f"Best model: {metadata['best_model_name']}")
+    best_model_name = metadata["best_model_name"]
+    st.success(f"Best model: {best_model_name}")
     report_path = os.path.join(MODEL_DIR, "classification_report.txt")
     if os.path.exists(report_path):
         with st.expander("Full classification report"):
             st.text(open(report_path, encoding="utf-8").read())
     with st.expander("Training metadata (JSON)"):
         st.json(metadata)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### Advanced NLP: Transformer Model")
+    st.markdown(
+        "<div class='card'><h4>DistilRoBERTa (BERT-based)</h4>"
+        "<p>A <b>pre-trained transformer</b> fine-tuned on emotion classification. Unlike TF-IDF, "
+        "it captures contextual meaning, negation, and long-range word dependencies via self-attention. "
+        "Select DistilRoBERTa (Transformer) in the Text Analyzer to compare it against "
+        "classical ML models.</p>"
+        "<p style='color:#9AA5B1;font-size:0.85rem'>Model: "
+        "<code>j-hartmann/emotion-english-distilroberta-base</code> (HuggingFace)</p></div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### Multi-Language Support")
+    st.markdown(
+        "<div class='card'><h4>Auto-detect and translate</h4>"
+        "<p>Input text is detected using <b>langdetect</b>. If the text is not in English, "
+        "it is automatically translated via Google Translate before analysis, enabling emotion "
+        "detection in Malay, Arabic, French, Spanish, and more. A banner is shown whenever "
+        "translation is applied.</p></div>",
+        unsafe_allow_html=True,
+    )
